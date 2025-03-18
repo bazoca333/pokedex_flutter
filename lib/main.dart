@@ -11,7 +11,7 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  ThemeMode _themeMode = ThemeMode.light;
+  ThemeMode _themeMode = ThemeMode.system;
 
   void _toggleTheme() {
     setState(() {
@@ -25,9 +25,9 @@ class _MyAppState extends State<MyApp> {
       debugShowCheckedModeBanner: false,
       title: 'Pokédex',
       themeMode: _themeMode,
-      theme: ThemeData.light(),
-      darkTheme: ThemeData.dark(),
-      home: HomeScreen(toggleTheme: _toggleTheme, isDarkMode: false,),
+      theme: ThemeData.light().copyWith(primaryColor: Colors.red),
+      darkTheme: ThemeData.dark().copyWith(primaryColor: Colors.black),
+      home: HomeScreen(toggleTheme: _toggleTheme),
     );
   }
 }

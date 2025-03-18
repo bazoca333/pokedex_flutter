@@ -6,8 +6,15 @@ class PokemonCard extends StatelessWidget {
   final bool isFavorite;
   final Function onFavoriteToggle;
   final Function onTap;
+  final bool isGrid;
 
-  PokemonCard({required this.pokemon, required this.isFavorite, required this.onFavoriteToggle, required this.onTap});
+  PokemonCard({
+    required this.pokemon,
+    required this.isFavorite,
+    required this.onFavoriteToggle,
+    required this.onTap,
+    required this.isGrid,
+  });
 
   final Map<String, Color> typeColors = {
     'fire': Colors.red,
@@ -36,22 +43,40 @@ class PokemonCard extends StatelessWidget {
       child: Card(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
         elevation: 5,
-        color: typeColors[pokemon.types.first] ?? Colors.grey,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Hero(
-              tag: pokemon.name,
-              child: Image.network(pokemon.imageUrl, height: 100, fit: BoxFit.contain),
-            ),
-            SizedBox(height: 10),
-            Text(pokemon.name.toUpperCase(), style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
-            IconButton(
-              icon: Icon(isFavorite ? Icons.favorite : Icons.favorite_border, color: isFavorite ? Colors.red : Colors.white),
-              onPressed: () => onFavoriteToggle(),
-            ),
-          ],
-        ),
+        shadowColor: typeColors[pokemon.types.first] ?? Colors.grey,
+        color: typeColors[pokemon.types.first]?.withOpacity(0.7) ?? Colors.white, // 🔥 Color de la card según el tipo
+        child: isGrid
+            ? Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Image.network(pokemon.imageUrl, height: 100, fit: BoxFit.contain),
+                  Text(pokemon.name.toUpperCase(), style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                  IconButton(icon: Icon(isFavorite ? Icons.favorite : Icons.favorite_border, color: isFavorite ? Colors.red : Colors.grey), onPressed: () => onFavoriteToggle()),
+                ],
+              )
+            : Container(
+                padding: EdgeInsets.symmetric(vertical: 10), // 🔹 Espaciado vertical
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center, // 🔥 Centrar verticalmente
+                  children: [
+                    SizedBox(width: 10),
+                    Image.network(pokemon.imageUrl, width: 80, height: 80),
+                    SizedBox(width: 20),
+                    Expanded(
+                      child: Text(
+                        pokemon.name.toUpperCase(),
+                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                      ),
+                    ),
+                    IconButton(
+                      icon: Icon(isFavorite ? Icons.favorite : Icons.favorite_border,
+                          color: isFavorite ? Colors.red : Colors.grey),
+                      onPressed: () => onFavoriteToggle(),
+                    ),
+                    SizedBox(width: 10),
+                  ],
+                ),
+              ),
       ),
     );
   }

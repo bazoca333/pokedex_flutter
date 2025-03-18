@@ -25,4 +25,16 @@ class ApiService {
       throw Exception('Error al obtener los Pokémon');
     }
   }
+
+  static Future<Pokemon> fetchPokemonByName(String name) async {
+    final response = await http.get(Uri.parse('$baseUrl/$name'));
+
+    if (response.statusCode == 200) {
+      final pokemonData = json.decode(response.body);
+      return Pokemon.fromJson(pokemonData);
+    } else {
+      throw Exception('Error al obtener los datos de $name');
+    }
+  }
+
 }
