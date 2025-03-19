@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../models/pokemon.dart';
 import '../widgets/pokemon_card.dart';
 import '../services/api_service.dart';
+import 'detail_screen.dart';
 
 class FavoritesScreen extends StatefulWidget {
   final List<String> favoritePokemons;
@@ -35,7 +36,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
         return ApiService.fetchPokemonByName(name);
       }).toList();
 
-      List<Pokemon> fetchedFavorites = await Future.wait(requests); // 🚀 Cargamos TODO en paralelo
+      List<Pokemon> fetchedFavorites = await Future.wait(requests);
 
       if (!mounted) return;
 
@@ -51,25 +52,25 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
 
   @override
   Widget build(BuildContext context) {
-    bool isDarkMode = Theme.of(context).brightness == Brightness.dark; // 🌙 Detecta modo oscuro
+    bool isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
       appBar: AppBar(
         title: Text('Pokémon Favoritos'),
-        backgroundColor: isDarkMode ? Colors.black87 : Colors.redAccent, // 🌓 Cambia el color de la AppBar
+        backgroundColor: isDarkMode ? Colors.black87 : Colors.redAccent,
       ),
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: isDarkMode
-                ? [Colors.black87, Colors.black54] // 🌙 Fondo oscuro
-                : [Colors.redAccent, Colors.orangeAccent, Colors.yellowAccent], // ☀️ Fondo claro
+                ? [Colors.black87, Colors.black54]
+                : [Colors.white70, Colors.white54],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
         ),
         child: isLoading
-            ? Center(child: CircularProgressIndicator()) // 🏎️ Indicador de carga rápida
+            ? Center(child: CircularProgressIndicator())
             : favoritePokemonDetails.isEmpty
                 ? Center(
                     child: Text(
@@ -77,7 +78,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        color: isDarkMode ? Colors.white : Colors.black, // 🌓 Texto visible en ambos temas
+                        color: isDarkMode ? Colors.white : Colors.black,
                       ),
                     ),
                   )
@@ -88,8 +89,18 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                         pokemon: favoritePokemonDetails[index],
                         isFavorite: true,
                         onFavoriteToggle: () {},
-                        onTap: () {},
-                        isGrid: false, // 🔥 Asegura el formato de lista
+                        onTap: () {
+                          
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => DetailScreen(
+                                pokemon: favoritePokemonDetails[index],
+                              ),
+                            ),
+                          );
+                        },
+                        isGrid: false,
                       );
                     },
                   ),

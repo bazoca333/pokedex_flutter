@@ -1,4 +1,5 @@
 import 'dart:math';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/pokemon.dart';
@@ -24,8 +25,9 @@ class _HomeScreenState extends State<HomeScreen> {
   String selectedType = "Todos";
   bool isGrid = false;
   bool isSorted = false;
-  int offset = 0;
   bool isLoading = false;
+  bool hasMore = true; 
+  ScrollController _scrollController = ScrollController();
 
   final List<String> pokemonTypes = [
     "Todos", "Fire", "Water", "Grass", "Electric", "Ice", "Fighting",
@@ -38,6 +40,7 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     _fetchPokemons();
     _loadFavorites();
+    _scrollController.addListener(_onScroll);
   }
 
   void _loadFavorites() async {
@@ -60,21 +63,30 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _fetchPokemons() async {
-    if (isLoading) return;
+    if (isLoading || !hasMore) return;
     setState(() => isLoading = true);
 
     try {
-      List<Pokemon> pokemons = await ApiService.fetchPokemons(100, offset);
+      List<Pokemon> pokemons = await ApiService.fetchAllPokemons();
+
+      if (!mounted) return;
+
       setState(() {
-        allPokemons.addAll(pokemons);
-        offset += 100;
+        allPokemons = pokemons;
         _filterPokemons();
+        hasMore = false;
       });
     } catch (e) {
       print("Error al cargar Pokémon: $e");
     }
 
     setState(() => isLoading = false);
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200) {
+      _fetchPokemons(); 
+    }
   }
 
   void _filterPokemons() {
@@ -106,13 +118,13 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    bool isDarkMode = Theme.of(context).brightness == Brightness.dark; // 🌙 Detecta si el modo oscuro está activado
+    bool isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
       appBar: AppBar(
         title: Text('Pokédex'),
         actions: [
-          IconButton(icon: Icon(Icons.shuffle), onPressed: _goToRandomPokemon), // 🔥 Botón de Pokémon Aleatorio
+          IconButton(icon: Icon(Icons.shuffle), onPressed: _goToRandomPokemon),
           IconButton(icon: Icon(Icons.star), onPressed: () {
             Navigator.push(
               context,
@@ -131,9 +143,7 @@ class _HomeScreenState extends State<HomeScreen> {
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: isDarkMode
-                ? [Colors.black87, Colors.black54] // 🌙 Fondo oscuro
-                : [Colors.redAccent, Colors.orangeAccent, Colors.yellowAccent], // ☀️ Fondo claro
+            colors: isDarkMode ? [Colors.black87, Colors.black54] : [Colors.white70, Colors.white54],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
@@ -147,10 +157,10 @@ class _HomeScreenState extends State<HomeScreen> {
                   labelText: 'Buscar Pokémon',
                   prefixIcon: Icon(Icons.search),
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                  fillColor: isDarkMode ? Colors.grey[900] : Colors.white, // 🌙 Color del input según el tema
+                  fillColor: isDarkMode ? Colors.grey[900] : Colors.white,
                   filled: true,
                 ),
-                style: TextStyle(color: isDarkMode ? Colors.white : Colors.black), // 🌓 Texto legible en ambos modos
+                style: TextStyle(color: isDarkMode ? Colors.white : Colors.black),
                 onChanged: (value) {
                   setState(() {
                     searchQuery = value;
@@ -159,55 +169,57 @@ class _HomeScreenState extends State<HomeScreen> {
                 },
               ),
             ),
-            
-            // 🔥 Dropdown de filtro por tipo de Pokémon
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-              child: DropdownButtonFormField<String>(
-                decoration: InputDecoration(
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                  filled: true,
-                  fillColor: isDarkMode ? Colors.grey[900] : Colors.white, // 🌓 Fondo dinámico para el filtro
-                ),
-                value: selectedType,
-                items: pokemonTypes.map((type) {
-                  return DropdownMenuItem<String>(
-                    value: type,
-                    child: Text(type, style: TextStyle(color: isDarkMode ? Colors.white : Colors.black)), // 🌙 Texto legible
-                  );
-                }).toList(),
-                onChanged: (value) {
-                  setState(() {
-                    selectedType = value!;
-                    _filterPokemons();
-                  });
-                },
-              ),
-            ),
-
             Expanded(
-              child: isLoading
+              child: isLoading && allPokemons.isEmpty
                   ? Center(child: CircularProgressIndicator())
-                  : GridView.builder(
-                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: isGrid ? 2 : 1,
-                        childAspectRatio: isGrid ? 1 : 3.5,
-                      ),
-                      itemCount: displayedPokemons.length,
-                      itemBuilder: (context, index) {
-                        return PokemonCard(
-                          pokemon: displayedPokemons[index],
-                          isFavorite: favoritePokemons.contains(displayedPokemons[index].name),
-                          onFavoriteToggle: () => _toggleFavorite(displayedPokemons[index].name),
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (_) => DetailScreen(pokemon: displayedPokemons[index])),
-                            );
-                          },
-                          isGrid: isGrid,
-                        );
+                  : NotificationListener<ScrollNotification>(
+                      onNotification: (ScrollNotification scrollInfo) {
+                        if (!isLoading && scrollInfo.metrics.pixels >= scrollInfo.metrics.maxScrollExtent - 200) {
+                          _fetchPokemons();
+                        }
+                        return false;
                       },
+                      child: isGrid
+                          ? GridView.builder(
+                              controller: _scrollController,
+                              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: 2,
+                                childAspectRatio: 0.9, 
+                              ),
+                              itemCount: displayedPokemons.length,
+                              itemBuilder: (context, index) {
+                                return PokemonCard(
+                                  pokemon: displayedPokemons[index],
+                                  isFavorite: favoritePokemons.contains(displayedPokemons[index].name),
+                                  onFavoriteToggle: () => _toggleFavorite(displayedPokemons[index].name),
+                                  onTap: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(builder: (_) => DetailScreen(pokemon: displayedPokemons[index])),
+                                    );
+                                  },
+                                  isGrid: isGrid,
+                                );
+                              },
+                            )
+                          : ListView.builder(
+                              controller: _scrollController,
+                              itemCount: displayedPokemons.length,
+                              itemBuilder: (context, index) {
+                                return PokemonCard(
+                                  pokemon: displayedPokemons[index],
+                                  isFavorite: favoritePokemons.contains(displayedPokemons[index].name),
+                                  onFavoriteToggle: () => _toggleFavorite(displayedPokemons[index].name),
+                                  onTap: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(builder: (_) => DetailScreen(pokemon: displayedPokemons[index])),
+                                    );
+                                  },
+                                  isGrid: isGrid,
+                                );
+                              },
+                            ),
                     ),
             ),
           ],
