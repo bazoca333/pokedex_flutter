@@ -8,6 +8,7 @@ import '../widgets/pokemon_card.dart';
 import 'detail_screen.dart';
 import 'favorites_screen.dart';
 
+
 class HomeScreen extends StatefulWidget {
   final VoidCallback toggleTheme;
 

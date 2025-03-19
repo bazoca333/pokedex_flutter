@@ -85,13 +85,7 @@ class PokemonCard extends StatelessWidget {
                         style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
                       ),
                     ),
-                    IconButton(
-                      icon: Icon(
-                        isFavorite ? Icons.favorite : Icons.favorite_border,
-                        color: isFavorite ? Colors.red : Colors.white,
-                      ),
-                      onPressed: () => onFavoriteToggle(),
-                    ),
+                    _buildLikeButton(startColor, endColor),
                   ],
                 )
               : Padding(
@@ -115,17 +109,32 @@ class PokemonCard extends StatelessWidget {
                           style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.white),
                         ),
                       ),
-                      IconButton(
-                        icon: Icon(
-                          isFavorite ? Icons.favorite : Icons.favorite_border,
-                          color: isFavorite ? Colors.red : Colors.white,
-                        ),
-                        onPressed: () => onFavoriteToggle(),
-                      ),
+                      _buildLikeButton(startColor, endColor),
                     ],
                   ),
                 ),
         ),
+      ),
+    );
+  }
+
+  // 🔥 Widget para el botón de Like con degradado
+  Widget _buildLikeButton(Color startColor, Color endColor) {
+    return Container(
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        gradient: LinearGradient(
+          colors: isFavorite ? [Colors.red, Colors.redAccent] : [startColor, endColor],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+      ),
+      child: IconButton(
+        icon: Icon(
+          isFavorite ? Icons.favorite : Icons.favorite_border,
+          color: Colors.white,
+        ),
+        onPressed: () => onFavoriteToggle(),
       ),
     );
   }
