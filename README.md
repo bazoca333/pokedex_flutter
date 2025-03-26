@@ -15,3 +15,5 @@
 - Filtros por tipo
 - Ordenar Pokémon
 - Modo aleatorio
+- Implementado Lazy loading
+- Manejo de errores
