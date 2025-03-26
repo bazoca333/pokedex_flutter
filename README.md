@@ -1,16 +1,17 @@
 # pokedex_flutter
 
-A new Flutter project.
 
-## Getting Started
-
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## Funcionalidades implementadas
+-  Agregar tarjetas (Card) para cada Pokémon con bordes redondeados y sombras.
+- Usar colores y tipografías llamativas.
+- Animaciones al cargar los datos.
+- Tipo(s) - Peso y altura - Estadísticas base (HP, Ataque, Defensa, etc.)
+- Modo oscuro
+- Cambio de vista (list view y grid view)
+- Cambio de color según tipo
+- Búsqueda de Pokémon
+- Cargar más Pokémon
+- Favoritos
+- Filtros por tipo
+- Ordenar Pokémon
+- Modo aleatorio
